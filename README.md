@@ -2,6 +2,8 @@
 
 Ringkeeper is a Python bot for the Builders Buildathon Mech Royale track. It projects the shrinking circle nine game-seconds ahead. When the circle permits a detour, it looks for power cubes, supply drops that restore health, and the lightning pickup. It opens crates, picks upgrades, and can leave an unreachable item to find another route. Its movement controller uses position feedback to recover from obstacles. The match supplies all observations over standard input.
 
+For cube collection it remembers sightings for up to six game-seconds, checks short two-stop routes against the projected ring, and sprints toward distant cubes while preserving an energy reserve. The route search considers at most eight cubes per decision.
+
 ## Run the tests
 
 From the root of this repository, run the following with Python 3.11 or later.
@@ -27,4 +29,4 @@ The check replays recorded observations. To get a placement score, publish this 
 
 ## Credits and license
 
-The unchanged `mechfight.py` transport and type definitions come from the [organizer's Python starter kit](https://www.joinbuilders.org/buildathon/tracks/builders). The decision policy, navigation controller, and unit tests were written for this entry with OpenAI Codex assistance. The bot uses the Python standard library and the Docker Official Image for Python. The entry is released under the [MIT License](LICENSE).
+The unchanged `mechfight.py` transport and type definitions come from the [organizer's Python starter kit](https://www.joinbuilders.org/buildathon/tracks/builders). The decision policy, cube planner, navigation controller, and tests were written for this entry with OpenAI Codex assistance. This version includes the collection policy selected in the team's synthetic arena experiments. The bot uses the Python standard library and the Docker Official Image for Python. The entry is released under the [MIT License](LICENSE).

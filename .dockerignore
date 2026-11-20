@@ -1,5 +1,6 @@
 *
 !bot.py
+!collection_policy.py
 !navigation.py
 !mechfight.py
 !Dockerfile

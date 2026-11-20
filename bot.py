@@ -6,18 +6,7 @@ import mechfight
 from navigation import Navigator
 
 
-def distance(a, b):
-    return math.hypot(a[0] - b[0], a[1] - b[1])
-
-
-def circle_at(zone, now, ahead):
-    """The reported circle already includes any shrink that has taken place."""
-    start = max(now, zone["shrink_start"])
-    end = zone["shrink_end"]
-    fraction = min(1.0, max(0.0, (now + ahead - start) / max(end - start, 0.001)))
-    center = [a + (b - a) * fraction for a, b in zip(zone["center"], zone["next_center"])]
-    radius = zone["radius"] + (zone["next_radius"] - zone["radius"]) * fraction
-    return center, radius
+from collection_policy import CollectionPolicy, circle_at, distance
 
 
 def fit_inside(point, center, radius):
@@ -40,6 +29,7 @@ class Bot:
 
     def __init__(self, hello):
         self.config = hello["config"]
+        self.collection = CollectionPolicy(self.config["cubes"].get("pickup_radius", 3.5))
         self.navigator = Navigator(hello["seed"])
         self.phase = random.Random(hello["seed"]).uniform(-math.pi, math.pi)
         self.waypoint = None
@@ -100,7 +90,8 @@ class Bot:
             if value > 0:
                 options.append((value, key, span, obj))
 
-        for cube in obs["cubes"]:
+        cubes = self.collection.first_stop(obs, center, radius, self.focus, self.skip_until)
+        for cube in cubes:
             add("cube", cube, 60 if me["cubes"] < 10 else 40, 68)
         if arc_missing:
             for item in obs["pickups"]:
@@ -129,6 +120,7 @@ class Bot:
         return key[0], obj
 
     def act(self, obs):
+        obs = dict(obs, cubes=self.collection.visible_and_remembered(obs))
         me = obs["self"]
         pos = me["pos"]
         now = obs["t"]
@@ -205,6 +197,7 @@ class Bot:
             if choices:
                 priorities = {name: i for i, name in enumerate(UPGRADES)}
                 act["pick"] = min(range(len(choices)), key=lambda i: priorities.get(choices[i]["id"], 100))
+        self.collection.collect_with_reserve(obs, act, self.focus, self.navigator.mode)
         return act
 
 
